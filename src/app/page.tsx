@@ -2,8 +2,29 @@ import { Link } from "@lazarv/react-server/navigation";
 import { ArrowRight, Clock } from "lucide-react";
 import { LatestArticleList } from "../components/LatestArticleList";
 import { PopularArticleList } from "../components/PopularArticleList";
+import { Suspense } from "react";
+
+type ArticleJson = {
+  id: string;
+  title: string;
+  description: string;
+  author: string;
+  createdAt: number;
+  viewCount: number;
+};
+
+const getArticles = async () => {
+  const response = await fetch(
+    "http://localhost:3000/api/articles/popular?limit=10"
+  );
+  const data = await response.json();
+  console.log(data);
+  return data;
+};
 
 export default async function Home() {
+  const articles = (await getArticles()) as ArticleJson[];
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       <div className="text-center mb-16">
@@ -44,7 +65,9 @@ export default async function Home() {
             <ArrowRight className="w-5 h-5 ml-1" />
           </Link>
         </div>
-        <PopularArticleList />
+        <Suspense fallback={<div>Loading...</div>}>
+          <PopularArticleList articles={articles} />
+        </Suspense>
       </div>
     </div>
   );
